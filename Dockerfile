@@ -1,18 +1,32 @@
-FROM node:12
+FROM node:20
 
 WORKDIR /app
-RUN apt-get update
-COPY package-lock.json .
+
+# Install build tools and dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    g++\
+    build-essential \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package.json and package-lock.json separately
 COPY package.json .
+COPY package-lock.json .
+
+# Install dependencies
 RUN npm install
 
-COPY src src
-COPY ssl ssl
-COPY public public
+# Copy the rest of the application code
+COPY . .
 
+# Expose ports
 EXPOSE 3016
 EXPOSE 10000-10100
 
-RUN npm i -g nodemon
+# Install nodemon globally
+RUN npm install -g nodemon
 
-CMD npm start
+# Command to start the application
+CMD ["npm", "start"]
+
